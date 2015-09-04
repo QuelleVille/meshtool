@@ -12,7 +12,7 @@ def to_json(o, level=0):
     if isinstance(o, dict):
         ret += "{" + NEWLINE
         comma = ""
-        for k,v in o.iteritems():
+        for k,v in o.items():
             ret += comma
             comma = ",\n"
             ret += SPACE * INDENT * (level+1)
@@ -20,7 +20,7 @@ def to_json(o, level=0):
             ret += to_json(v, level + 1)
             
         ret += NEWLINE + SPACE * INDENT * level + "}"
-    elif isinstance(o, basestring):
+    elif isinstance(o, str):
         ret += '"' + o + '"'
     elif isinstance(o, list):
         ret += "[" + ",".join([to_json(e, level+1) for e in o]) + "]"
@@ -33,7 +33,7 @@ def to_json(o, level=0):
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
         ret += "[" + ','.join(map(str, o.flatten().tolist())) + "]"
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
-        ret += "[" + ','.join(map(lambda x: '%.7g' % x, o.flatten().tolist())) + "]"
+        ret += "[" + ','.join(['%.7g' % x for x in o.flatten().tolist()]) + "]"
     else:
         raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
     return ret
@@ -77,7 +77,7 @@ class ThreeJSDictGenerator(object):
         outdict['objects'] = self.getObjects()
         outdict['embeds'] = self.getEmbeds()
         outdict['geometries'] = {}
-        for embed_name in outdict['embeds'].keys():
+        for embed_name in list(outdict['embeds'].keys()):
             outdict['geometries'][embed_name] = {'type': 'embedded_mesh', 'id': embed_name}
         
         outdict['materials'] = self.getMaterials()
@@ -85,7 +85,7 @@ class ThreeJSDictGenerator(object):
         texture_placements = self.getTexturePlacements()
         outdict['textures'] = dict((cimg.id, {'url': outname})
                                    for cimg, outname in
-                                   texture_placements.iteritems())
+                                   texture_placements.items())
         
         return outdict
     
@@ -188,7 +188,7 @@ class ThreeJSDictGenerator(object):
         objects = {}
         
         matrix = numpy.identity(4)
-        print self.mesh.assetInfo.upaxis
+        print(self.mesh.assetInfo.upaxis)
         if self.mesh.assetInfo.upaxis == collada.asset.UP_AXIS.X_UP:
             r = collada.scene.RotateTransform(0,1,0,-90)
             matrix = r.matrix

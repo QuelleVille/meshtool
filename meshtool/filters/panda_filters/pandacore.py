@@ -4,7 +4,7 @@ import posixpath
 import struct
 from math import pi, sin, cos
 from meshtool.util import Image, ImageOps
-from StringIO import StringIO
+from io import StringIO
 import inspect
 import math
 
@@ -38,7 +38,7 @@ def getNodeFromController(controller, controlled_prim):
         skeleton = PartGroup(bundle, '<skeleton>')
 
         character_joints = {}
-        for (name, joint_matrix) in controller.joint_matrices.iteritems():
+        for (name, joint_matrix) in controller.joint_matrices.items():
             joint_matrix.shape = (-1)
             character_joints[name] = CharacterJoint(ch, bundle, skeleton, name, Mat4(*joint_matrix)) 
         

@@ -28,12 +28,12 @@ def optimizeSources(mesh):
                 semantic_sources[src.id] = src
                 src_by_semantic[semantic] = semantic_sources
         
-        for semantic, sources in src_by_semantic.iteritems():            
+        for semantic, sources in src_by_semantic.items():            
             source_placements = {}
             
             to_concat = []
             cur_index = 0
-            for src in sources.itervalues():
+            for src in sources.values():
                 srcid = src.id
                 components = src.components
                 to_concat.append(src.data)

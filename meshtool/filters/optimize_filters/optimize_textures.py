@@ -1,7 +1,7 @@
 from meshtool.filters.base_filters import OptimizationFilter
 from meshtool.util import Image
 import sys
-from StringIO import StringIO
+from io import StringIO
 
 import numpy
 
@@ -20,7 +20,7 @@ def optimizeTextures(mesh):
             
             #if we can't even load the image's data, can't convert
             if imgdata is None:
-                print >> sys.stderr, "Couldn't load image data"
+                print("Couldn't load image data", file=sys.stderr)
                 continue
             
             try:
@@ -29,14 +29,14 @@ def optimizeTextures(mesh):
                 from panda3d.core import PNMImage
             except ImportError:
                 #if panda3d isn't installed and PIL failed, can't convert
-                print >> sys.stderr, 'Tried loading image with PIL and DDS and both failed'
+                print('Tried loading image with PIL and DDS and both failed', file=sys.stderr)
                 continue
             
             t = Texture()
             success = t.readDds(StringStream(imgdata))
             if success == 0:
                 #failed to load as DDS, so let's give up
-                print >> sys.stderr, 'Tried loading image as DDS and failed'
+                print('Tried loading image as DDS and failed', file=sys.stderr)
                 continue
 
             #convert DDS to PNG
@@ -46,7 +46,7 @@ def optimizeTextures(mesh):
                 im.load()
             except IOError:
                 #Any problem with panda3d might generate an invalid image buffer, so don't convert this
-                print >> sys.stderr, 'Problem loading DDS file with PIL'
+                print('Problem loading DDS file with PIL', file=sys.stderr)
                 continue
             
             pilimg = im
@@ -87,8 +87,8 @@ def optimizeTextures(mesh):
                
         try:
             pilimg.save(outbuf, output_format, **output_options)
-        except IOError, ex:
-            print ex
+        except IOError as ex:
+            print(ex)
 
         cimg.data = outbuf.getvalue()
 

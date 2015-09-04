@@ -3,13 +3,13 @@ from meshtool.filters.base_filters import SimplifyFilter
 import inspect
 import numpy
 import networkx as nx
-from itertools import chain, izip, combinations
+from itertools import chain, combinations
 import datetime
 import math
-import __builtin__
+import builtins
 import heapq
-from render_utils import renderVerts, renderCharts
-from graph_utils import astar_path, dfs_interior_nodes, super_cycle
+from .render_utils import renderVerts, renderCharts
+from .graph_utils import astar_path, dfs_interior_nodes, super_cycle
 import gc
 import sys
 import random
@@ -22,7 +22,7 @@ except ImportError:
 
 from meshtool.util import Image, ImageDraw
 from meshtool.filters.atlas_filters.rectpack import RectPack
-from StringIO import StringIO
+from io import StringIO
 import meshtool.filters
 import bisect
 
@@ -457,7 +457,7 @@ class SanderSimplify(object):
         self.end_operation()
 
     def begin_operation(self, message):
-        print message,
+        print(message, end=' ')
         sys.stdout.flush()
         gc.disable()
     def end_operation(self):
@@ -466,9 +466,9 @@ class SanderSimplify(object):
         seconds -= (hours * 3600)
         minutes = seconds // 60
         seconds -= (minutes * 60)
-        if hours > 0: print "%dh" % hours,
-        if hours > 0 or minutes > 0: print "%dm" % minutes,
-        print "%ds" % seconds
+        if hours > 0: print("%dh" % hours, end=' ')
+        if hours > 0 or minutes > 0: print("%dm" % minutes, end=' ')
+        print("%ds" % seconds)
         gc.enable()
 
     def uniqify_list(self):
@@ -488,7 +488,7 @@ class SanderSimplify(object):
     def build_vertex_graph(self):
         self.begin_operation('Building vertex graph...')
         vertexgraph = nx.Graph()
-        vertexgraph.add_nodes_from(xrange(len(self.all_vertices)))
+        vertexgraph.add_nodes_from(range(len(self.all_vertices)))
 
         vertexgraph.add_edges_from(self.all_vert_indices[:,(0,1)])
         vertexgraph.add_edges_from(self.all_vert_indices[:,(0,2)])
@@ -576,7 +576,7 @@ class SanderSimplify(object):
                 diffuse = mat.effect.diffuse
             else:
                 diffuse = None
-            for i in xrange(tri_index, end_range):
+            for i in range(tri_index, end_range):
                 facegraph.node[i]['diffuse'] = diffuse
                 
         self.facegraph = facegraph
@@ -768,7 +768,7 @@ class SanderSimplify(object):
         for face, facedata in self.facegraph.nodes_iter(data=True):
             edges = facedata['edges']
             vertices = set(chain.from_iterable(edges))
-            corners = set((v for v in vertices if self.facegraph.subgraph(self.vertexgraph.node[v].keys()).number_of_edges() >= 3))
+            corners = set((v for v in vertices if self.facegraph.subgraph(list(self.vertexgraph.node[v].keys())).number_of_edges() >= 3))
             self.facegraph.node[face]['corners'] = corners
             
         if enforce:
@@ -1132,7 +1132,7 @@ class SanderSimplify(object):
                 Bv /= sumu
                 try: numpy.fill_diagonal(A, 1)
                 except AttributeError:
-                    for i in xrange(len(A)):
+                    for i in range(len(A)):
                         A[i][i] = 1
                 
                 interior_us = numpy.linalg.solve(A, Bu)
@@ -1140,8 +1140,8 @@ class SanderSimplify(object):
                 for (i, (u, v)) in enumerate(zip(interior_us, interior_vs)):
                     vert2uv[interior_verts[i]] = (u[0], v[0])
                     
-            new_uvs.append(vert2uv.values())
-            newvert2idx = dict(zip(vert2uv.keys(), range(new_uvs_offset, new_uvs_offset + len(vert2uv))))
+            new_uvs.append(list(vert2uv.values()))
+            newvert2idx = dict(list(zip(list(vert2uv.keys()), list(range(new_uvs_offset, new_uvs_offset + len(vert2uv))))))
             for tri in facedata['tris']:
                 for i, v in enumerate(self.all_vert_indices[tri]):
                     new_uv_indices[tri][i] = newvert2idx[v]
@@ -1181,7 +1181,7 @@ class SanderSimplify(object):
                 neighborhood_stretch[index_map[:,0]] += L2
                 neighborhood_stretch[index_map[:,1]] += L2
                 neighborhood_stretch[index_map[:,2]] += L2
-                vert_stretch_heap = zip(-1 * neighborhood_stretch, unique_verts)
+                vert_stretch_heap = list(zip(-1 * neighborhood_stretch, unique_verts))
                 heapq.heapify(vert_stretch_heap)
             
                 while len(vert_stretch_heap) > 0:
@@ -1216,7 +1216,7 @@ class SanderSimplify(object):
                     minx, maxx = tuple(sorted([minx, maxx]))
                     
                     if not(0 <= minx <= maxx <= 1):
-                        print minx, maxx, xfromy(0), xfromy(1), yfromx(0), yfromx(1)
+                        print(minx, maxx, xfromy(0), xfromy(1), yfromx(0), yfromx(1))
                     assert(0 <= minx <= maxx <= 1)
                     
                     rangesize = (maxx-minx) / iteration
@@ -1498,7 +1498,7 @@ class SanderSimplify(object):
         moved = set()
         degenerate = set()
         degenerate_segments = []
-        for t2, t2_idx in izip(v2tris, v2tri_idx):
+        for t2, t2_idx in zip(v2tris, v2tri_idx):
             if v1 in t2_idx:
                 degenerate.add(t2)
                 facefrom = self.tri2face[t2]
@@ -1602,7 +1602,7 @@ class SanderSimplify(object):
                 self.tri2face[tri] = face
             self.facegraph.node[face]['orig_tris'] = facedata['tris']
 
-        self.vertexgraph.add_nodes_from(( (i, {'tris':set()}) for i in xrange(len(self.all_vertices))))
+        self.vertexgraph.add_nodes_from(( (i, {'tris':set()}) for i in range(len(self.all_vertices))))
         for i, (v1,v2,v3) in enumerate(self.all_vert_indices):
             self.vertexgraph.node[v1]['tris'].add(i)
             self.vertexgraph.node[v2]['tris'].add(i)
@@ -1668,7 +1668,7 @@ class SanderSimplify(object):
     def simplify_mesh(self):
         self.begin_operation('(Step 4 of 7) Simplifying...')
         
-        self.tris_left = set(xrange(len(self.all_vert_indices)))
+        self.tris_left = set(range(len(self.all_vert_indices)))
         self.simplify_operations = []
         
         while len(self.contraction_priorities) > 0:
@@ -1707,13 +1707,13 @@ class SanderSimplify(object):
             
             #do degenerate first so we can record values for progressive stream
             degenerate = set()
-            for t2, t2_idx in izip(v2tris, v2tri_idx):
+            for t2, t2_idx in zip(v2tris, v2tri_idx):
                 if v1 in t2_idx:
                     degenerate.add(t2)
                     self.simplify_operations.append((STREAM_OP.TRIANGLE_ADDITION, t2, t2_idx, self.all_normal_indices[t2], self.new_uv_indices[t2]))
             
             new_contractions = set()
-            for t2, t2_idx in izip(v2tris, v2tri_idx):
+            for t2, t2_idx in zip(v2tris, v2tri_idx):
                 if v1 not in t2_idx:
                     #these are triangles that have a vertex moving from v2 to v1
                     where_v2 = numpy.where(t2_idx == v2)[0][0]
@@ -1815,7 +1815,7 @@ class SanderSimplify(object):
         self.atlasimg = Image.new('RGB', (self.chart_packing.width, self.chart_packing.height))
         atlasmask = Image.new('L', (self.chart_packing.width, self.chart_packing.height), 255)
         
-        for face_or_color, chartim in self.chart_ims.iteritems():
+        for face_or_color, chartim in self.chart_ims.items():
 
             x,y,w,h = self.chart_packing.getPlacement(face_or_color)
             #adjust for 1 pixel border
@@ -1917,8 +1917,8 @@ class SanderSimplify(object):
         for i, oldset in enumerate(unique_stacked_indices):
             oldindex2newindex[tuple(oldset)] = i 
         
-        print 'num unique vert data locs in base mesh', len(unique_stacked_indices)
-        print 'num triangles in base mesh', len(self.tris_left)
+        print('num unique vert data locs in base mesh', len(unique_stacked_indices))
+        print('num triangles in base mesh', len(self.tris_left))
         cur_triangle = len(self.tris_left)
         
         vertex_buffer = []
@@ -2069,16 +2069,16 @@ class SanderSimplify(object):
         self.build_face_graph()
         
         #renderCharts(self.facegraph, self.all_vertices, self.all_vert_indices)
-        print 'number of vertices =', len(self.vertexgraph)
-        print 'number of faces =', len(self.facegraph)
-        print 'connected vertex components =', nx.number_connected_components(self.vertexgraph)
-        print 'connected face components =', nx.number_connected_components(self.facegraph)
+        print('number of vertices =', len(self.vertexgraph))
+        print('number of faces =', len(self.facegraph))
+        print('connected vertex components =', nx.number_connected_components(self.vertexgraph))
+        print('connected face components =', nx.number_connected_components(self.facegraph))
         
         self.initialize_chart_merge_errors()
         self.merge_charts()
         
-        print 'number of charts =', len(self.facegraph)
-        print 'connected face components =', nx.number_connected_components(self.facegraph)
+        print('number of charts =', len(self.facegraph))
+        print('connected face components =', nx.number_connected_components(self.facegraph))
         
         #renderCharts(self.facegraph, self.all_vertices, self.all_vert_indices)
         
@@ -2093,13 +2093,13 @@ class SanderSimplify(object):
         self.create_initial_parameterizations()
         self.optimize_chart_parameterizations()
         self.resize_charts()
-        print 'texture size = (%dx%d)' % (self.chart_packing.width, self.chart_packing.height)
+        print('texture size = (%dx%d)' % (self.chart_packing.width, self.chart_packing.height))
         
         self.initialize_simplification_errors()
         self.simplify_mesh()
-        print 'number of faces in base mesh after simplification =', len(self.tris_left)
+        print('number of faces in base mesh after simplification =', len(self.tris_left))
         self.enforce_simplification()
-        print 'number of faces in base mesh after enforced simplification =', len(self.tris_left)
+        print('number of faces in base mesh after enforced simplification =', len(self.tris_left))
         
         self.normalize_uvs()
         self.pack_charts()

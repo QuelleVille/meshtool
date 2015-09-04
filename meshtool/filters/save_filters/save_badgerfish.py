@@ -1,6 +1,6 @@
 from meshtool.filters.base_filters import SaveFilter, FilterException
 import os
-import badgerfish
+from . import badgerfish
 
 def FilterGenerator():
     class BadgerFishSaveFilter(SaveFilter):

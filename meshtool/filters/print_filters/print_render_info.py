@@ -5,11 +5,11 @@ import itertools
 
 def humanize_bytes(val, precision=1):
     abbrevs = (
-        (1<<50L, 'PB'),
-        (1<<40L, 'TB'),
-        (1<<30L, 'GB'),
-        (1<<20L, 'MB'),
-        (1<<10L, 'KB'),
+        (1<<50, 'PB'),
+        (1<<40, 'TB'),
+        (1<<30, 'GB'),
+        (1<<20, 'MB'),
+        (1<<10, 'KB'),
         (1, 'bytes')
     )
     if val == 1:
@@ -111,15 +111,15 @@ def getRenderInfo(mesh):
 
 def printRenderInfo(mesh):
     render_info = getRenderInfo(mesh)
-    print 'Total texture RAM required: %s' % humanize_bytes(render_info['texture_ram'])
-    print 'Total triangles: %d' % render_info['num_triangles']
-    print 'Total vertices: %d' % render_info['num_vertices']
-    print 'Total normals: %d' % render_info['num_normals']
-    print 'Total texcoords: %d' % render_info['num_texcoords']
-    print 'Raw number of draw calls: %d' % render_info['num_draw_raw']
-    print 'Number of draw calls with instance batching: %d' % render_info['num_draw_with_instances']
-    print 'Number of draw calls with instance and material batching: %d' % render_info['num_draw_with_batching']
-    print 'Number of lines: %d' % render_info['num_lines']
+    print('Total texture RAM required: %s' % humanize_bytes(render_info['texture_ram']))
+    print('Total triangles: %d' % render_info['num_triangles'])
+    print('Total vertices: %d' % render_info['num_vertices'])
+    print('Total normals: %d' % render_info['num_normals'])
+    print('Total texcoords: %d' % render_info['num_texcoords'])
+    print('Raw number of draw calls: %d' % render_info['num_draw_raw'])
+    print('Number of draw calls with instance batching: %d' % render_info['num_draw_with_instances'])
+    print('Number of draw calls with instance and material batching: %d' % render_info['num_draw_with_batching'])
+    print('Number of lines: %d' % render_info['num_lines'])
 
 def FilterGenerator():
     class PrintRenderInfoFilter(PrintFilter):

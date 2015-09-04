@@ -1,9 +1,9 @@
 from meshtool.filters.base_filters import SaveFilter, FilterException
 import os
 import zipfile
-from StringIO import StringIO
+from io import StringIO
 import posixpath
-import save_obj_util
+from . import save_obj_util
 
 def FilterGenerator():
     class ObjZipSaveFilter(SaveFilter):

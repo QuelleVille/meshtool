@@ -1,6 +1,6 @@
 from meshtool.filters.base_filters import SaveFilter, FilterException
 import os
-import save_obj_util
+from . import save_obj_util
 
 def FilterGenerator():
     class ObjSaveFilter(SaveFilter):

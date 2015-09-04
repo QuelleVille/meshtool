@@ -4,7 +4,7 @@ import posixpath
 
 import collada
 from meshtool.util import Image
-from StringIO import StringIO
+from io import StringIO
 import math
 import tarfile
 
@@ -111,7 +111,7 @@ def saveMipMaps(mesh):
     if not os.path.isdir(reldir):
         return False
     
-    for imgpath, (tarbuf, ranges) in mipmaps.iteritems():
+    for imgpath, (tarbuf, ranges) in mipmaps.items():
         saveto = os.path.normpath(os.path.join(reldir, imgpath))
         saveto += '.tar'
         f = open(saveto, 'wb')

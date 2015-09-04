@@ -1,8 +1,8 @@
 from meshtool.args import FileArgument
 from meshtool.filters.base_filters import VisualizationFilter
 
-from pandacore import getSceneMembers, ensureCameraAt, attachLights
-from pandacontrols import KeyboardMovement, MouseDrag, MouseScaleZoom, MouseCamera, ButtonUtils
+from .pandacore import getSceneMembers, ensureCameraAt, attachLights
+from .pandacontrols import KeyboardMovement, MouseDrag, MouseScaleZoom, MouseCamera, ButtonUtils
 from direct.gui.DirectGui import DirectSlider, OnscreenText
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import GeomNode, TransparencyAttrib, GeomVertexWriter
@@ -11,7 +11,7 @@ from panda3d.core import Mat4
 import sys
 import numpy
 import collada
-from pdae_utils import PM_OP, readPDAE
+from .pdae_utils import PM_OP, readPDAE
 
 uiArgs = { 'rolloverSound':None,
            'clickSound':None
@@ -26,7 +26,7 @@ class PandaPmViewer:
         base = ShowBase()
         
         if len(scene_members) > 1:
-            print 'There is more than one geometry in the scene, so I think this is not a progressive base mesh.'
+            print('There is more than one geometry in the scene, so I think this is not a progressive base mesh.')
             sys.exit(1)
         
         rotateNode = GeomNode("rotater")
@@ -61,16 +61,16 @@ class PandaPmViewer:
         ButtonUtils(wrappedNode)
         MouseCamera()
         
-        print 'Loading pm into memory... ',
+        print('Loading pm into memory... ', end=' ')
         sys.stdout.flush()
         self.pm_refinements = readPDAE(pm_filebuf)
         self.pm_index = 0
-        print 'Done'
+        print('Done')
 
         self.slider = DirectSlider(range=(0,len(self.pm_refinements)),
                                    value=0, pageSize=len(self.pm_refinements)/20,
                                    command=self.sliderMoved, pos=(0, 0, -.9), scale=1)
-        for key, val in uiArgs.iteritems():
+        for key, val in uiArgs.items():
             self.slider.thumb[key] = val
         
         self.triText = OnscreenText(text="", pos=(-1,0.85), scale = 0.15,
@@ -172,8 +172,8 @@ def FilterGenerator():
         def apply(self, mesh, pm_filename):
             try:
                 pm_filebuf = open(pm_filename, 'r')
-            except IOError, ex:
-                print "Error opening pm file:", str(ex)
+            except IOError as ex:
+                print("Error opening pm file:", str(ex))
                 sys.exit(1)
             pmview = PandaPmViewer(mesh, pm_filebuf)
             return mesh

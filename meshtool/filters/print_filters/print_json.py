@@ -60,7 +60,7 @@ def FilterGenerator():
         def __init__(self):
             super(PrintJsonFilter, self).__init__('print_json', 'Prints a bunch of information about the mesh in a JSON format')
         def apply(self, mesh):
-            print getJSON(mesh)
+            print(getJSON(mesh))
             return mesh
     return PrintJsonFilter()
 from meshtool.filters import factory

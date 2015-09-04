@@ -42,10 +42,10 @@ def slugify(value):
     
     From Django's "django/template/defaultfilters.py".
     """
-    if not isinstance(value, unicode):
-        value = unicode(value)
+    if not isinstance(value, str):
+        value = str(value)
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = unicode(_slugify_strip_re.sub('', value).strip())
+    value = str(_slugify_strip_re.sub('', value).strip())
     return _slugify_hyphenate_re.sub('-', value)
 
 def which(program):

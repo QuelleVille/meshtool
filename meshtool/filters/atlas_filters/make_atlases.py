@@ -5,7 +5,7 @@ import math
 import collada
 import numpy
 import itertools
-from StringIO import StringIO
+from io import StringIO
 
 #The maximum width or height of a texture
 MAX_IMAGE_DIMENSION = 4096
@@ -75,7 +75,7 @@ def getTexcoordToImgMapping(mesh):
     
     #remove any texture coordinates that dont get mapped to textures
     all_texcoords = dict( (texset, imglist)
-                          for texset, imglist in all_texcoords.iteritems()
+                          for texset, imglist in all_texcoords.items()
                           if len(imglist) > 0 )
     
     return all_texcoords
@@ -86,7 +86,7 @@ def combinePacks(to_del1, to_del2):
     elif to_del2 is None:
         return to_del1
     else:
-        for geom, primlist in to_del2.iteritems():
+        for geom, primlist in to_del2.items():
             if geom in to_del1:
                 to_del1[geom].extend(primlist)
             else:
@@ -94,8 +94,8 @@ def combinePacks(to_del1, to_del2):
         return to_del1
 
 def splitAlphas(unique_images):
-    group1 = dict(( (path, pilimg) for path, pilimg in unique_images.iteritems() if 'A' in pilimg.getbands() ))
-    group2 = dict(( (path, pilimg) for path, pilimg in unique_images.iteritems() if 'A' not in pilimg.getbands() ))
+    group1 = dict(( (path, pilimg) for path, pilimg in unique_images.items() if 'A' in pilimg.getbands() ))
+    group2 = dict(( (path, pilimg) for path, pilimg in unique_images.items() if 'A' not in pilimg.getbands() ))
 
     return group1, group2
 
@@ -106,7 +106,7 @@ def packImages(mesh, img2texs, unique_images, image_scales):
     
     #okay, now we can start packing!
     rp = RectPack(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)
-    for path, pilimg in unique_images.iteritems():
+    for path, pilimg in unique_images.items():
         width, height = pilimg.size
         rp.addRectangle(path, width, height)
     success = rp.pack()
@@ -118,8 +118,8 @@ def packImages(mesh, img2texs, unique_images, image_scales):
             # then there's no point in continuing
             return
                 
-        group1 = dict(( (path, pilimg) for path, pilimg in unique_images.iteritems() if path in rp.rejects ))
-        group2 = dict(( (path, pilimg) for path, pilimg in unique_images.iteritems() if path not in rp.rejects ))
+        group1 = dict(( (path, pilimg) for path, pilimg in unique_images.items() if path in rp.rejects ))
+        group2 = dict(( (path, pilimg) for path, pilimg in unique_images.items() if path not in rp.rejects ))
         
         return combinePacks(packImages(mesh, img2texs, group1, image_scales),
                     packImages(mesh, img2texs, group2, image_scales))
@@ -127,12 +127,12 @@ def packImages(mesh, img2texs, unique_images, image_scales):
     width = rp.width
     height = rp.height
     
-    print "actually making atlas of size %dx%d with %d subimages referenced by %d texcoords" % \
-        (width, height, len(unique_images), sum([len(img2texs[imgpath]) for imgpath in unique_images]))
+    print("actually making atlas of size %dx%d with %d subimages referenced by %d texcoords" % \
+        (width, height, len(unique_images), sum([len(img2texs[imgpath]) for imgpath in unique_images])))
     atlasimg = Image.new('RGBA', (width, height), (0,0,0,255))
     
     to_del = {}
-    for path, pilimg in unique_images.iteritems():
+    for path, pilimg in unique_images.items():
         x,y,w,h = rp.getPlacement(path)
         atlasimg.paste(pilimg, (x,y,x+w,y+h))
         
@@ -253,7 +253,7 @@ def makeAtlases(mesh):
     # also filter out any images that are >= 1024 in either dimension
     texs_to_delete = []
     imgs_to_delete = []
-    for texset, imgpaths in tex2img.iteritems():
+    for texset, imgpaths in tex2img.items():
         
         valid_range = False
         if len(imgpaths) == 1:
@@ -286,11 +286,11 @@ def makeAtlases(mesh):
                 if imgpath not in imgs_to_delete:
                     imgs_to_delete.append(imgpath)
             texs_to_delete.append(texset)
-    for imgpath, pilimg in unique_images.iteritems():
+    for imgpath, pilimg in unique_images.items():
         if max(pilimg.size) > MAX_IMAGE_DIMENSION and imgpath not in imgs_to_delete:
             imgs_to_delete.append(imgpath)
     for imgpath in imgs_to_delete:
-        for texset, imgpaths in tex2img.iteritems():
+        for texset, imgpaths in tex2img.items():
             if imgpaths[0] == imgpath and texset not in texs_to_delete:
                 texs_to_delete.append(texset)
         del unique_images[imgpath]
@@ -302,11 +302,11 @@ def makeAtlases(mesh):
     img2texs = {}
     for imgpath in unique_images:
         img2texs[imgpath] = []
-        for texset, imgpaths in tex2img.iteritems():
+        for texset, imgpaths in tex2img.items():
             if imgpaths[0] == imgpath:
                 img2texs[imgpath].append(texset)
     
-    for path, pilimg in unique_images.iteritems():
+    for path, pilimg in unique_images.items():
         tile_x, tile_y = image_scales[path]
         width, height = pilimg.size
         if tile_x > 1 or tile_y > 1:
@@ -335,7 +335,7 @@ def makeAtlases(mesh):
     to_del = combinePacks(packImages(mesh, img2texs, group1, image_scales),
                 packImages(mesh, img2texs, group2, image_scales))
     if to_del is not None:
-        for geom, primindices in to_del.iteritems():
+        for geom, primindices in to_del.items():
             for i in sorted(primindices, reverse=True):
                 del geom.primitives[i]
 

@@ -166,7 +166,7 @@ def getPmPerceptualError(mesh, pm_filebuf, mipmap_tarfilebuf):
                     
                     try:
                         output = subprocess.check_output([perceptualdiff, '-threshold', '1', fullFile, curFile])
-                    except subprocess.CalledProcessError, ex:
+                    except subprocess.CalledProcessError as ex:
                         output = ex.output
                     
                     output = output.strip()
@@ -186,7 +186,7 @@ def getPmPerceptualError(mesh, pm_filebuf, mipmap_tarfilebuf):
 def printPmPerceptualError(mesh, pm_filebuf, mipmap_tarfilebuf):
     error_data = getPmPerceptualError(mesh, pm_filebuf, mipmap_tarfilebuf)
     for level in error_data:
-        print '%(triangles)d tris, %(width)dx%(height)d: %(pixel_error)d pixels' % level
+        print('%(triangles)d tris, %(width)dx%(height)d: %(pixel_error)d pixels' % level)
 
 def FilterGenerator():
     class PrintPmPerceptualError(PrintFilter):
@@ -200,12 +200,12 @@ def FilterGenerator():
         def apply(self, mesh, pm_filename, mipmap_tarfilename):
             try:
                 pm_filebuf = open(pm_filename, 'r') if pm_filename != 'NONE' else None
-            except IOError, ex:
+            except IOError as ex:
                 raise FilterException("Error opening pm file: %s" % str(ex))
             
             try:
                 mipmap_tarfilebuf = open(mipmap_tarfilename, 'rb')
-            except IOError, ex:
+            except IOError as ex:
                 raise FilterException("Error opening mipmap tar: %s" % str(ex))
             
             perceptualdiff = which('perceptualdiff')

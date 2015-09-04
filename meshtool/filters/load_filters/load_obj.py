@@ -2,7 +2,7 @@ import collections
 import os
 import sys
 from meshtool.util import to_unicode, slugify
-from StringIO import StringIO
+from io import StringIO
 import string
 import posixpath
 
@@ -84,7 +84,7 @@ def decode_mtl_color(line):
     
     # if can't convert to floats, give up
     try:
-        color_values = map(float, line.split())
+        color_values = list(map(float, line.split()))
     except ValueError:
         return None
     
@@ -239,7 +239,7 @@ def loadMaterialLib(data, namer, aux_file_loader=None):
                 cimages.append(cimg)
         
         else:
-            print 'MISSING MTL LINE', command, line
+            print('MISSING MTL LINE', command, line)
         
     if current_effect.id != ' empty ':
         effects.append(current_effect)
@@ -423,13 +423,13 @@ def loadOBJ(data, aux_file_loader=None, validate_output=False):
         # stech
         
         else:
-            print '  MISSING LINE: %s %s' % (command, line)
+            print('  MISSING LINE: %s %s' % (command, line))
     
     # done, append last group
     if not group.empty():
         groups.append(group)
     
-    for material in material_map.values():
+    for material in list(material_map.values()):
         mesh.effects.append(material.effect)
         mesh.materials.append(material)
     for cimg in cimages:

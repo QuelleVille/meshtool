@@ -11,8 +11,8 @@ def FilterGenerator():
                 raise FilterException("argument is not a valid file")
             try:
                 col = collada.Collada(filename)
-            except collada.DaeError, e:
-                print e
+            except collada.DaeError as e:
+                print(e)
                 raise FilterException("errors while loading file")
                 
             return col

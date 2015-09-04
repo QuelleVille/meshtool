@@ -13,7 +13,7 @@ def generateNormals(mesh):
                 else:
                     prims_by_src[vertex_source] = [prim]
 
-        for srcid, primlist in prims_by_src.iteritems():
+        for srcid, primlist in prims_by_src.items():
             vertex = geom.sourceById[srcid[1:]].data
             norms = numpy.zeros( vertex.shape, dtype=vertex.dtype )
             

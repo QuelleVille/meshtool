@@ -1,7 +1,7 @@
 from meshtool.filters.base_filters import SaveFilter, FilterException
 import os
 import zipfile
-from StringIO import StringIO
+from io import StringIO
 import posixpath
 
 def FilterGenerator():

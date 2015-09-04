@@ -1,7 +1,7 @@
 from meshtool.filters.base_filters import VisualizationFilter
 
-from pandacore import setupPandaApp, getBaseNodePath
-from pandacontrols import KeyboardMovement, MouseDrag, MouseScaleZoom, MouseCamera, ButtonUtils
+from .pandacore import setupPandaApp, getBaseNodePath
+from .pandacontrols import KeyboardMovement, MouseDrag, MouseScaleZoom, MouseCamera, ButtonUtils
 
 def runViewer(mesh):
     p3dApp = setupPandaApp(mesh)

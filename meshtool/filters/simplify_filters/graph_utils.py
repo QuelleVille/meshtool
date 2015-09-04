@@ -1,7 +1,7 @@
 from heapq import heappush, heappop
 from networkx import NetworkXError
 import networkx as nx
-import __builtin__
+import builtins
 
 def astar_path(G, source, target, heuristic=None, weight='weight', exclude=None, subset=None):
     """Return a list of nodes in a shortest path between source and target 
@@ -97,7 +97,7 @@ def astar_path(G, source, target, heuristic=None, weight='weight', exclude=None,
 
         explored[curnode] = parent
 
-        for neighbor, w in G[curnode].items():
+        for neighbor, w in list(G[curnode].items()):
             if neighbor in explored or \
                     (exclude and neighbor != target and neighbor in exclude) or \
                     (subset and neighbor not in subset):

@@ -108,9 +108,9 @@ def fmtpt(pt):
 
 def printBoundsInfo(mesh):
     boundsinfo = getBoundsInfo(mesh)
-    print 'Bounds: <%s, %s>' % (fmtpt(boundsinfo['bounds'][0]), fmtpt(boundsinfo['bounds'][1]))
-    print 'Center: %s' % fmtpt(boundsinfo['center'])
-    print 'Point farthest from center: %s at distance of %.7g' % (fmtpt(boundsinfo['center_farthest']), boundsinfo['center_farthest_distance'])
+    print('Bounds: <%s, %s>' % (fmtpt(boundsinfo['bounds'][0]), fmtpt(boundsinfo['bounds'][1])))
+    print('Center: %s' % fmtpt(boundsinfo['center']))
+    print('Point farthest from center: %s at distance of %.7g' % (fmtpt(boundsinfo['center_farthest']), boundsinfo['center_farthest_distance']))
 
 def FilterGenerator():
     class PrintBoundsFilter(PrintFilter):

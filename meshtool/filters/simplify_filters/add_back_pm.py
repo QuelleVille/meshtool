@@ -70,15 +70,15 @@ def add_back_pm(mesh, pm_file, percent):
             vals = list(operation)
             op = vals.pop(0)
             if op == pdae_utils.PM_OP.VERTEX_ADDITION:
-                vx, vy, vz, nx, ny, nz, s, t = map(float, vals)
+                vx, vy, vz, nx, ny, nz, s, t = list(map(float, vals))
                 unique_stacked_data[cur_vertex:cur_vertex+8] = vx, vy, vz, nx, ny, nz, s, t
                 cur_vertex += 8
             elif op == pdae_utils.PM_OP.TRIANGLE_ADDITION:
-                v1, v2, v3 = map(int, vals)
+                v1, v2, v3 = list(map(int, vals))
                 inverse_map[cur_triangle:cur_triangle+3] = v1, v2, v3
                 cur_triangle += 3
             elif op == pdae_utils.PM_OP.INDEX_UPDATE:
-                tindex, vindex = map(int, vals)
+                tindex, vindex = list(map(int, vals))
                 inverse_map[tindex] = vindex
     
     oldgeom = geom

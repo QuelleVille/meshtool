@@ -12,7 +12,7 @@ def FilterGenerator():
             super(PrintTexturesFilter, self).__init__('print_textures', 'Prints a list of the embedded images in the mesh')
         def apply(self, mesh):
             for t in getTextures(mesh):
-                print t
+                print(t)
             return mesh
     return PrintTexturesFilter()
 from meshtool.filters import factory

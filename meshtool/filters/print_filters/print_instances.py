@@ -14,8 +14,8 @@ def printInstances(mesh):
                 elif isinstance(node, collada.scene.GeometryNode) or \
                         isinstance(node, collada.scene.ControllerNode):
                     num_instances += 1
-                    print node
-    print 'Total geometries instantiated in default scene: %d' % num_instances
+                    print(node)
+    print('Total geometries instantiated in default scene: %d' % num_instances)
 
 def FilterGenerator():
     class PrintInstancesFilter(PrintFilter):

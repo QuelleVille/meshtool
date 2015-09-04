@@ -1,15 +1,15 @@
 try:
     from pdae_cython import *
 except ImportError:
-    from pdae_python import *
+    from .pdae_python import *
     
 import unittest
 import time
 import os
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except ImportError:
-    import StringIO
+    import io
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 class PM_OP:
@@ -22,11 +22,11 @@ class PDAETest(unittest.TestCase):
         for i in range(2):
             f = open(os.path.join(CURDIR, 'test.pdae'))
             if i % 2 == 0:
-                f = StringIO.StringIO(f.read())
+                f = io.StringIO(f.read())
             start = time.time()
             refinements = readPDAE(f)
             after = time.time()
-            print 'Took', after - start, 'seconds to load'
+            print('Took', after - start, 'seconds to load')
             self.assertEqual(len(refinements), 23222)
             
     def testPartial(self):
@@ -65,7 +65,7 @@ class PDAETest(unittest.TestCase):
                     else:
                         curdata = f.read(block_size)
                 after = time.time()
-                print 'Took', after - start, 'seconds to load'
+                print('Took', after - start, 'seconds to load')
                 self.assertEqual(all_pm_refinements, blessed_refinements)
     
 if __name__ == '__main__':

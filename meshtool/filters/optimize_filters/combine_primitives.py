@@ -76,7 +76,7 @@ def combinePrimitives(mesh):
             # arrays into a single source and the primitives into a single primitive
             
             semantic_counts = getSemanticCount(s['inputs'].getList())
-            source_count = sum(semantic_counts.itervalues())
+            source_count = sum(semantic_counts.values())
 
             src_arrays = []
             for member in s['members']:

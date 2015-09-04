@@ -1,8 +1,8 @@
 import struct
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 class PM_OP:
     INDEX_UPDATE = 1
@@ -24,16 +24,16 @@ def readPDAErefinement(pm_filebuf, num_operations):
         vals = pm_filebuf.readline().strip().split()
         op = vals.pop(0)
         if op == 't':
-            v1, v2, v3 = map(int, vals)
+            v1, v2, v3 = list(map(int, vals))
             refinement_ops.append((PM_OP.TRIANGLE_ADDITION, v1, v2, v3))
         elif op == 'u':
-            tindex, vindex = map(int, vals)
+            tindex, vindex = list(map(int, vals))
             refinement_ops.append((PM_OP.INDEX_UPDATE, tindex, vindex))
         elif op == 'v':
-            vx, vy, vz, nx, ny, nz, s, t = map(float, vals)
+            vx, vy, vz, nx, ny, nz, s, t = list(map(float, vals))
             refinement_ops.append((PM_OP.VERTEX_ADDITION, vx, vy, vz, nx, ny, nz, s, t))
         else:
-            print op
+            print(op)
             assert(False)
             
     return refinement_ops

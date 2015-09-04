@@ -16,7 +16,7 @@ def to_pod(xml):
         properties['$'] = xml.text
         
     #attributes are prefixed with @
-    for (key, val) in xml.attrib.iteritems():
+    for (key, val) in xml.attrib.items():
         properties['@' + key] = val
     
     #children are entries keyed by their element name

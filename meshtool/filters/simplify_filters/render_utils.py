@@ -27,7 +27,7 @@ def gen_color2(N):
     import colorsys
     HSV_tuples = [(x*1.0/N, 0.5, 0.5) for x in range(N)]
     for x in HSV_tuples:
-        yield map(lambda x:int(x * 256), colorsys.hsv_to_rgb(*x))
+        yield [int(x * 256) for x in colorsys.hsv_to_rgb(*x)]
 
 def gen_color3(N):
     import matplotlib.cm
@@ -35,7 +35,7 @@ def gen_color3(N):
     
     cm = matplotlib.cm.get_cmap('Accent')
     N = float(N)
-    colors = [map(lambda x:int(x * 256), cm(i/N)) for i in range(int(N))]
+    colors = [[int(x * 256) for x in cm(i/N)] for i in range(int(N))]
     random.shuffle(colors)
     for i in range(int(N)):
         yield colors[i]
@@ -57,7 +57,7 @@ def gen_color():
         h %= 1
         HSV_tuple = [h, 0.95, 0.95]  # this defines how "deep" are the colors
         RGB_tuple = colorsys.hsv_to_rgb(*HSV_tuple)
-        yield map(lambda x:int(x * 256), RGB_tuple)
+        yield [int(x * 256) for x in RGB_tuple]
 
 def renderCharts(facegraph, verts, vert_indices, lineset=None):
     

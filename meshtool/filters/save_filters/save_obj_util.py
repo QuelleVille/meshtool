@@ -1,6 +1,6 @@
 import collada
 import os.path
-from itertools import izip, chain
+from itertools import chain
 from meshtool.filters.base_filters import FilterException
 
 def materialParameterAsFloat(value, default=None):
@@ -50,26 +50,26 @@ def write_mtl(mesh, fmtl, mtlfilename=None):
     """
 
     for mtl in mesh.materials:
-        print >>fmtl, "newmtl", mtl.id
+        print("newmtl", mtl.id, file=fmtl)
         if mtl.effect.ambient is not None:
-            print >>fmtl, formatMaterialField('Ka', mtl.effect.ambient, mesh, mtlfilename)
+            print(formatMaterialField('Ka', mtl.effect.ambient, mesh, mtlfilename), file=fmtl)
         if mtl.effect.diffuse is not None:
-            print >>fmtl, formatMaterialField('Kd', mtl.effect.diffuse, mesh, mtlfilename)
+            print(formatMaterialField('Kd', mtl.effect.diffuse, mesh, mtlfilename), file=fmtl)
         if mtl.effect.specular is not None:
-            print >>fmtl, formatMaterialField('Ks', mtl.effect.specular, mesh, mtlfilename)
+            print(formatMaterialField('Ks', mtl.effect.specular, mesh, mtlfilename), file=fmtl)
         if mtl.effect.shininess is not None:
-            print >>fmtl, formatMaterialField('Ns', mtl.effect.shininess, mesh, mtlfilename)
+            print(formatMaterialField('Ns', mtl.effect.shininess, mesh, mtlfilename), file=fmtl)
         # d and Tr are both used for transparency
         if mtl.effect.transparent is not None:
             transparent_float = materialParameterAsFloat(mtl.effect.transparent, default=1.0)
-            print >>fmtl, formatMaterialField('d', transparent_float, mesh, mtlfilename)
-            print >>fmtl, formatMaterialField('Tr', transparent_float, mesh, mtlfilename)
+            print(formatMaterialField('d', transparent_float, mesh, mtlfilename), file=fmtl)
+            print(formatMaterialField('Tr', transparent_float, mesh, mtlfilename), file=fmtl)
 
         # Illumination model: 1 = diffuse, 2 = with specular
         illum_model = 1 if mtl.effect.shadingtype in ['lambert', 'constant'] else 2
-        print >>fmtl, "illum", illum_model
+        print("illum", illum_model, file=fmtl)
 
-        print >>fmtl
+        print(file=fmtl)
 
 
 def write_obj(mesh, mtlfilename, f):
@@ -92,15 +92,15 @@ def write_obj(mesh, mtlfilename, f):
                 raise FilterException("OBJ only supports one texture coordinate set.")
 
             # Write transformed vertices, normals, texcoords
-            f.write("\n".join(map(lambda vert: 'v %.7g %.7g %.7g' % tuple(vert), boundprim.vertex.tolist())))
+            f.write("\n".join(['v %.7g %.7g %.7g' % tuple(vert) for vert in boundprim.vertex.tolist()]))
             f.write("\n")
 
             if emit_normals:
-                f.write("\n".join(map(lambda norm: 'vn %.7g %.7g %.7g' % tuple(norm), boundprim.normal.tolist())))
+                f.write("\n".join(['vn %.7g %.7g %.7g' % tuple(norm) for norm in boundprim.normal.tolist()]))
                 f.write("\n")
 
             if emit_texcoords:
-                f.write("\n".join(map(lambda uv: 'vt %.7g %.7g' % tuple(uv), boundprim.texcoordset[0].tolist())))
+                f.write("\n".join(['vt %.7g %.7g' % tuple(uv) for uv in boundprim.texcoordset[0].tolist()]))
                 f.write("\n")
 
             # Start using the right material
@@ -109,19 +109,19 @@ def write_obj(mesh, mtlfilename, f):
 
             if emit_normals and emit_texcoords:
                 format_string = "f %d/%d/%d %d/%d/%d %d/%d/%d"
-                index_iter = izip(boundprim.vertex_index+vert_offset, boundprim.texcoord_indexset[0]+tc_offset, boundprim.normal_index+norm_offset)
+                index_iter = zip(boundprim.vertex_index+vert_offset, boundprim.texcoord_indexset[0]+tc_offset, boundprim.normal_index+norm_offset)
             elif emit_normals:
                 format_string = "f %d//%d %d//%d %d//%d"
-                index_iter = izip(boundprim.vertex_index+vert_offset, boundprim.normal_index+norm_offset)
+                index_iter = zip(boundprim.vertex_index+vert_offset, boundprim.normal_index+norm_offset)
             elif emit_texcoords:
                 format_string = "f %d/%d %d/%d %d/%d"
-                index_iter = izip(boundprim.vertex_index+vert_offset, boundprim.texcoord_indexset[0]+tc_offset)
+                index_iter = zip(boundprim.vertex_index+vert_offset, boundprim.texcoord_indexset[0]+tc_offset)
             else:
                 format_string = "f %d %d %d"
-                index_iter = izip(boundprim.vertex_index+vert_offset)
+                index_iter = zip(boundprim.vertex_index+vert_offset)
 
             # Write transformed primitives
-            f.write("\n".join(map(lambda idx: format_string % tuple(chain.from_iterable(zip(*idx))), index_iter)))
+            f.write("\n".join([format_string % tuple(chain.from_iterable(list(zip(*idx)))) for idx in index_iter]))
             f.write("\n")
 
             # Finally, update offsets

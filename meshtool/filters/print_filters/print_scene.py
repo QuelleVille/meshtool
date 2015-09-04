@@ -3,11 +3,11 @@ import collada
 
 def printNode(node, depth):
     indent = '  '
-    print indent*depth + str(node)
+    print(indent*depth + str(node))
     if isinstance(node, collada.scene.Node):
         for child in node.children:
             printNode(child, depth+1)
-        print indent*depth + '</Node>'
+        print(indent*depth + '</Node>')
 
 def printScene(mesh):
     if mesh.scene is not None:
