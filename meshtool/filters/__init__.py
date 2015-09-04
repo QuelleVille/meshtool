@@ -1,6 +1,11 @@
 from meshtool.filters.base_filters import FilterFactory
 import sys
 
+try:
+    import panda3d
+    HAS_PANDA = True
+except ImportError:
+    HAS_PANDA = False
 factory = FilterFactory()
 
 def warn(name, e):
@@ -27,16 +32,18 @@ try: import meshtool.filters.print_filters.print_render_info
 except ImportError as e: warn('print_render_info', e)
 try: import meshtool.filters.print_filters.print_bounds
 except ImportError as e: warn('print_bounds', e)
-try: import meshtool.filters.print_filters.print_pm_perceptual_error
-except ImportError as e: warn('print_pm_perceptual_error', e)
+if HAS_PANDA:
+    try: import meshtool.filters.print_filters.print_pm_perceptual_error
+    except ImportError as e: warn('print_pm_perceptual_error', e)
 
 #Viewer
-try: import meshtool.filters.panda_filters.viewer
-except ImportError as e: warn('viewer', e)
-try: import meshtool.filters.panda_filters.collada_viewer
-except ImportError as e: warn('collada_viewer', e)
-try: import meshtool.filters.panda_filters.pm_viewer
-except ImportError as e: warn('pm_viewer', e)
+if HAS_PANDA:
+    try: import meshtool.filters.panda_filters.viewer
+    except ImportError as e: warn('viewer', e)
+    try: import meshtool.filters.panda_filters.collada_viewer
+    except ImportError as e: warn('collada_viewer', e)
+    try: import meshtool.filters.panda_filters.pm_viewer
+    except ImportError as e: warn('pm_viewer', e)
 
 #Optimizations
 try: import meshtool.filters.optimize_filters.combine_effects
@@ -85,10 +92,11 @@ try: import meshtool.filters.meta_filters.full_optimizations
 except ImportError as e: warn('full_optimizations', e)
 
 #Save filters last
-try: import meshtool.filters.panda_filters.save_screenshot
-except ImportError as e: warn('save_screenshot', e)
-try: import meshtool.filters.panda_filters.save_rotate_screenshots
-except ImportError as e: warn('save_rotate_screenshots', e)
+if HAS_PANDA:
+    try: import meshtool.filters.panda_filters.save_screenshot
+    except ImportError as e: warn('save_screenshot', e)
+    try: import meshtool.filters.panda_filters.save_rotate_screenshots
+    except ImportError as e: warn('save_rotate_screenshots', e)
 try: import meshtool.filters.save_filters.save_collada
 except ImportError as e: warn('save_collada', e)
 try: import meshtool.filters.save_filters.save_collada_zip
@@ -101,7 +109,8 @@ try: import meshtool.filters.save_filters.save_obj
 except ImportError as e: warn('save_obj', e)
 try: import meshtool.filters.save_filters.save_obj_zip
 except ImportError as e: warn('save_obj_zip', e)
-try: import meshtool.filters.save_filters.save_bam
-except ImportError as e: warn('save_bam', e)
+if HAS_PANDA:
+    try: import meshtool.filters.save_filters.save_bam
+    except ImportError as e: warn('save_bam', e)
 try: import meshtool.filters.save_filters.save_threejs_scene
 except ImportError as e: warn('save_threejs_scene', e)
