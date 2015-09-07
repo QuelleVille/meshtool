@@ -169,7 +169,7 @@ class ThreeJSDictGenerator(object):
                     attrs['uuid'] = str(uuid.uuid4())
                     attrs['name'] = boundgeom.original.name
                     attrs['material'] = boundprim.material.id
-                    attrs['matrix'] = boundgeom.matrix.flatten().tolist()
+                    attrs['matrix'] = boundgeom.matrix.flatten('F').tolist()
                     attrs['type'] = 'Mesh'
                     attrs['geometry'] = boundgeom.original.id
                     children.append(attrs)
