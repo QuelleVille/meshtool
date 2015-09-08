@@ -3,7 +3,6 @@ from meshtool.filters.base_filters import SaveFilter
 import numpy
 import collada
 
-
 def deccolor(c):
     return (int(c[0] * 255) << 16) + (int(c[1] * 255) << 8) + int(c[2] * 255)
 
@@ -53,9 +52,9 @@ class ThreeJSDictGenerator(object):
         outdict['metadata'] = {'version': 4.3,
                                'type': 'Object',
                                'generator': 'meshtool'}
-        outdict['geometries'] = self.getGeometries()
         outdict['materials'] = self.getMaterials()
-        outdict['object'] = self.getScene()
+        outdict['object'], outdict['geometries'] = self.getScene()
+        self.getGeometries()
         return outdict
 
     def save_to(self, filename):
@@ -127,52 +126,63 @@ class ThreeJSDictGenerator(object):
                 attrs['opacity'] = opacity
                 attrs['transparent'] = opacity < 1
 
-
-
             materials.append(attrs)
 
         return materials
 
-    def getGeometries(self):
-        geometries = []
 
-        for geom in self.mesh.geometries:
-            for prim_num, prim in enumerate(geom.primitives):
-                if isinstance(prim, collada.polylist.Polylist):
-                    prim = prim.triangleset()
+    def serializeBoundPrimitives(self, primitives, geom_id):
 
-                attrs = {}
-                attrs['uuid'] = geom.id
-                attrs['type'] = 'BufferGeometry'
+        offset = 0
+        indices_array = None
+        positions_array = None
+        normals_array = None
+        for prim in primitives:
+            if isinstance(prim, collada.polygons.BoundPolygons):
+                prim = prim.triangleset()
 
-                data = {}
-                data['position'] = {
-                    'itemSize': 3,
-                    'type': 'Float32Array',
-                    'array': prim.vertex.flatten().tolist() if prim.vertex is not None else []
+            if positions_array is None:
+                positions_array = prim.vertex
+            else:
+                positions_array = numpy.concatenate((positions_array, prim.vertex))
+
+
+
+            if normals_array is None:
+                normals_array = prim.normal
+            else:
+                normals_array = numpy.concatenate((normals_array, prim.normal))
+
+            if indices_array is None:
+                indices_array = prim.vertex_index
+            else:
+                indices_array = numpy.concatenate((indices_array, prim.vertex_index + offset))
+
+            offset += int(len(positions_array) / 3)
+
+        return {
+            'uuid': geom_id,
+            'type': 'BufferGeometry',
+            'data': {
+                'index': {
+                    'type': 'Uint32Array',
+                    'array': indices_array
+                },
+                'attributes': {
+                    'position':{
+                        'itemSize': 3,
+                        'type': 'Float32Array',
+                        'array': positions_array
+                    },
+                    'normal':{
+                        'itemSize': 3,
+                        'type': 'Float32Array',
+                        'array': normals_array if normals_array is not None else []
+                    },
                 }
-                data['normal'] = {
-                    'itemSize': 3,
-                    'type': 'Float32Array',
-                    'array': prim.normal.flatten().tolist() if prim.normal is not None else []
-                }
-                data['uv'] = {
-                    'itemSize': 2,
-                    'type': 'Float32Array',
-                    'array': prim.texcoordset[0].flatten().tolist() if len(prim.texcoordset) else []
-                }
+            },
+        }
 
-                attrs['data'] = {
-                    'attributes': data,
-                    'index': {
-                        'type': 'Uint32Array',
-                        'array': prim.vertex_index.flatten().tolist() if prim.vertex_index.any is not None else []
-                    }
-                }
-
-                geometries.append(attrs)
-
-        return geometries
 
     def getScene(self):
         children = []
@@ -196,19 +206,32 @@ class ThreeJSDictGenerator(object):
         #    r = collada.scene.RotateTransform(1, 0, 0, -90)
         #    matrix = r.matrix
 
+
+        primitives_by_mat = {}
         if self.mesh.scene is not None:
             for boundgeom in self.mesh.scene.objects('geometry'):
-                for prim_num, boundprim in enumerate(boundgeom.primitives()):
-                    attrs = {}
-                    attrs['uuid'] = str(uuid.uuid4())
-                    attrs['name'] = boundgeom.original.name
-                    attrs['material'] = boundprim.material.id
-                    attrs['matrix'] = boundgeom.matrix.flatten('F').tolist()
-                    attrs['type'] = 'Mesh'
-                    attrs['geometry'] = boundgeom.original.id
-                    children.append(attrs)
+                for boundprim in boundgeom.primitives():
+                    mat = boundprim.material.id
+                    primitives = primitives_by_mat.setdefault(mat, [])
+                    primitives.append((boundgeom, boundprim))
 
-        return object
+        geometries = []
+
+        for mat, prims in primitives_by_mat.items():
+            for geom, prim in prims:
+
+                geom_id = str(uuid.uuid4()) #geom.original.id
+
+                children.append({
+                    'uuid':  str(uuid.uuid4()),
+                    'material': mat,
+                    'type': 'Mesh',
+                    'geometry': geom_id
+                })
+
+                geometries.append(self.serializeBoundPrimitives([prim], geom_id))
+
+        return object, geometries
 
 
 def FilterGenerator():
