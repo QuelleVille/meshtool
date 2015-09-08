@@ -1,5 +1,4 @@
 import uuid
-import json
 from meshtool.filters.base_filters import SaveFilter
 import numpy
 import collada
@@ -7,6 +6,41 @@ import collada
 
 def deccolor(c):
     return (int(c[0] * 255) << 16) + (int(c[1] * 255) << 8) + int(c[2] * 255)
+
+
+# We don't use python json module so that we have more control on formatting (especially float truncation)
+def to_json(o):
+    ret = ""
+    if o is None:
+       pass #ret += 'null'
+    elif isinstance(o, dict):
+        ret += "{"
+        comma = ""
+        for k,v in o.items():
+            ret += comma
+            comma = ","
+            ret += '"' + str(k) + '":'
+            ret += to_json(v)
+
+        ret += "}"
+    elif isinstance(o, str):
+        ret += '"' + o + '"'
+    elif isinstance(o, list):
+        ret += "[" + ",".join([to_json(e) for e in o]) + "]"
+    elif isinstance(o, bool):
+        ret += "true" if o else "false"
+    elif isinstance(o, int):
+        ret += str(o)
+    elif isinstance(o, float):
+        ret += '%.7g' % o
+    elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
+        ret += "[" + ','.join(map(str, o.flatten().tolist())) + "]"
+    elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
+        ret += "[" + ','.join(['%.3g' % x for x in o.flatten().tolist()]) + "]"
+    else:
+        raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
+    return ret
+
 
 
 class ThreeJSDictGenerator(object):
@@ -28,7 +62,7 @@ class ThreeJSDictGenerator(object):
         outputfile = open(filename, 'w')
 
         outdict = self.to_dict()
-        outputfile.write(json.dumps(outdict))
+        outputfile.write(to_json(outdict))
         outputfile.close()
 
     def getMaterials(self):
