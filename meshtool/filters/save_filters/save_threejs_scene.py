@@ -80,14 +80,18 @@ class ThreeJSDictGenerator(object):
 
             color_mapping = [('diffuse', 'color'),
                              ('ambient', 'ambient'),
-                             ('specular', 'specular')]
+                             ('specular', 'specular'),
+                             ('emission', 'emissive')]
             for effect_attr, three_name in color_mapping:
                 val = getattr(effect, effect_attr, None)
                 if val is not None and not isinstance(val, collada.material.Map):
                     attrs[three_name] = deccolor(val)
 
             float_mapping = [('shininess', 'shininess'),
-                             ('transparency', 'opacity')]
+                             ('transparency', 'opacity'),
+                             ('reflectivity', 'reflectivity'),
+                             ('index_of_refraction', 'refractionRatio')]
+
             for effect_attr, three_name in float_mapping:
                 val = getattr(effect, effect_attr, None)
                 if val is not None and not isinstance(val, collada.material.Map):
