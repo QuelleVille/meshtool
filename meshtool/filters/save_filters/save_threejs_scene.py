@@ -135,21 +135,17 @@ class ThreeJSDictGenerator(object):
 
 
     def serializeBoundPrimitives(self, primitives, geom_id):
-
         offset = 0
         indices_array = None
         positions_array = None
         normals_array = None
         for prim in primitives:
-            if isinstance(prim, collada.polygons.BoundPolygons):
+            if isinstance(prim, collada.polygons.BoundPolygons) or isinstance(prim, collada.polylist.BoundPolylist):
                 prim = prim.triangleset()
-
             if positions_array is None:
                 positions_array = prim.vertex
             else:
                 positions_array = numpy.concatenate((positions_array, prim.vertex))
-
-
 
             if normals_array is None:
                 normals_array = prim.normal
@@ -161,7 +157,9 @@ class ThreeJSDictGenerator(object):
             else:
                 indices_array = numpy.concatenate((indices_array, prim.vertex_index + offset))
 
-            offset += int(len(positions_array) / 3)
+            offset = len(positions_array)
+        assert numpy.amax(indices_array) < len(positions_array), (numpy.amax(indices_array), len(positions_array))
+
 
         return {
             'uuid': geom_id,
@@ -214,25 +212,27 @@ class ThreeJSDictGenerator(object):
         if self.mesh.scene is not None:
             for boundgeom in self.mesh.scene.objects('geometry'):
                 for boundprim in boundgeom.primitives():
+
+                    if isinstance(boundprim, collada.lineset.BoundLineSet):
+                        continue
+                    if not boundprim.nvertices:
+                        continue
+
                     mat = boundprim.material.id
                     primitives = primitives_by_mat.setdefault(mat, [])
-                    primitives.append((boundgeom, boundprim))
+                    primitives.append(boundprim)
 
         geometries = []
 
-        for mat, prims in primitives_by_mat.items():
-            for geom, prim in prims:
-
-                geom_id = str(uuid.uuid4()) #geom.original.id
-
-                children.append({
-                    'uuid':  str(uuid.uuid4()),
-                    'material': mat,
-                    'type': 'Mesh',
-                    'geometry': geom_id
-                })
-
-                geometries.append(self.serializeBoundPrimitives([prim], geom_id))
+        for mat, bound_prims in primitives_by_mat.items():
+            geom_id = str(uuid.uuid4())
+            children.append({
+                'uuid':  str(uuid.uuid4()),
+                'material': mat,
+                'type': 'Mesh',
+                'geometry': geom_id
+            })
+            geometries.append(self.serializeBoundPrimitives(bound_prims, geom_id))
 
         return object, geometries
 
