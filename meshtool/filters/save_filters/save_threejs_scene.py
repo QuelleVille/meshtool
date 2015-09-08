@@ -35,7 +35,7 @@ def to_json(o):
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
         ret += "[" + ','.join(map(str, o.flatten().tolist())) + "]"
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
-        ret += "[" + ','.join(['%.3g' % x for x in o.flatten().tolist()]) + "]"
+        ret += "[" + ','.join(['%.13g' % x for x in o.flatten().tolist()]) + "]"
     else:
         raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
     return ret
