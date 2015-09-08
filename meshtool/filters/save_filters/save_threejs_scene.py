@@ -70,7 +70,7 @@ class ThreeJSDictGenerator(object):
 
             attrs = {}
             attrs['uuid'] = material.id
-            attrs['name'] = material.name
+            attrs['name'] = material.name or ''
             if effect.shadingtype == 'lambert':
                 attrs['type'] = 'MeshLambertMaterial'
             elif effect.shadingtype == 'phong' or effect.shadingtype == 'blinn':
