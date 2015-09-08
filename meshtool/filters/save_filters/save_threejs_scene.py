@@ -54,7 +54,6 @@ class ThreeJSDictGenerator(object):
                                'generator': 'meshtool'}
         outdict['materials'] = self.getMaterials()
         outdict['object'], outdict['geometries'] = self.getScene()
-        self.getGeometries()
         return outdict
 
     def save_to(self, filename):
