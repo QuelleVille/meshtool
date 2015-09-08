@@ -179,12 +179,10 @@ class ThreeJSDictGenerator(object):
         if self.mesh.scene is not None:
             for boundgeom in self.mesh.scene.objects('geometry'):
                 for boundprim in boundgeom.primitives():
-
                     if isinstance(boundprim, collada.lineset.BoundLineSet):
                         continue
-                    if not boundprim.nvertices:
+                    if boundprim.vertex is None or not len(boundprim.vertex):
                         continue
-
                     mat = boundprim.material.id
                     primitives = primitives_by_mat.setdefault(mat, [])
                     primitives.append(boundprim)
