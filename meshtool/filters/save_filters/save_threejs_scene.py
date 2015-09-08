@@ -1,44 +1,11 @@
 import uuid
+import json
 from meshtool.filters.base_filters import SaveFilter
 import numpy
 import collada
 
 def deccolor(c):
     return (int(c[0] * 255) << 16) + (int(c[1] * 255) << 8) + int(c[2] * 255)
-
-
-# We don't use python json module so that we have more control on formatting (especially float truncation)
-def to_json(o):
-    ret = ""
-    if o is None:
-       pass #ret += 'null'
-    elif isinstance(o, dict):
-        ret += "{"
-        comma = ""
-        for k,v in o.items():
-            ret += comma
-            comma = ","
-            ret += '"' + str(k) + '":'
-            ret += to_json(v)
-
-        ret += "}"
-    elif isinstance(o, str):
-        ret += '"' + o + '"'
-    elif isinstance(o, list):
-        ret += "[" + ",".join([to_json(e) for e in o]) + "]"
-    elif isinstance(o, bool):
-        ret += "true" if o else "false"
-    elif isinstance(o, int):
-        ret += str(o)
-    elif isinstance(o, float):
-        ret += '%.7g' % o
-    elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
-        ret += "[" + ','.join(map(str, o.flatten().tolist())) + "]"
-    elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
-        ret += "[" + ','.join(['%.13g' % x for x in o.flatten().tolist()]) + "]"
-    else:
-        raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
-    return ret
 
 
 
@@ -60,7 +27,7 @@ class ThreeJSDictGenerator(object):
         outputfile = open(filename, 'w')
 
         outdict = self.to_dict()
-        outputfile.write(to_json(outdict))
+        outputfile.write(json.dumps(outdict, separators=(',', ':')))
         outputfile.close()
 
     def getMaterials(self):
@@ -167,18 +134,18 @@ class ThreeJSDictGenerator(object):
             'data': {
                 'index': {
                     'type': 'Uint32Array',
-                    'array': indices_array
+                    'array': indices_array.flatten().tolist()
                 },
                 'attributes': {
                     'position':{
                         'itemSize': 3,
                         'type': 'Float32Array',
-                        'array': positions_array
+                        'array': positions_array.flatten().tolist()
                     },
                     'normal':{
                         'itemSize': 3,
                         'type': 'Float32Array',
-                        'array': normals_array if normals_array is not None else []
+                        'array': normals_array.flatten().tolist() if normals_array is not None else []
                     },
                 }
             },
