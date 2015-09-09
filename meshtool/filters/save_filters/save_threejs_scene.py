@@ -1,5 +1,6 @@
 import uuid
 import json
+from collections import OrderedDict
 from meshtool.filters.base_filters import SaveFilter
 import numpy
 import collada
@@ -13,14 +14,15 @@ class ThreeJSDictGenerator(object):
     def __init__(self, mesh):
         self.mesh = mesh
         self.texture_placements = None
+        self.unique_materials = {}
 
     def to_dict(self):
         outdict = {}
         outdict['metadata'] = {'version': 4.3,
                                'type': 'Object',
                                'generator': 'meshtool'}
-        outdict['materials'] = self.getMaterials()
         outdict['object'], outdict['geometries'] = self.getScene()
+        outdict['materials'] = list(self.unique_materials.values())
         return outdict
 
     def save_to(self, filename):
@@ -30,75 +32,79 @@ class ThreeJSDictGenerator(object):
         outputfile.write(json.dumps(outdict, separators=(',', ':')))
         outputfile.close()
 
-    def getMaterials(self):
-        materials = []
-        for material in self.mesh.materials:
-            effect = material.effect
 
-            attrs = {}
-            attrs['uuid'] = material.id
-            attrs['name'] = material.name or ''
-            if effect.shadingtype == 'lambert':
-                attrs['type'] = 'MeshLambertMaterial'
-            elif effect.shadingtype == 'phong' or effect.shadingtype == 'blinn':
-                attrs['type'] = 'MeshPhongMaterial'
+    def get_unique_material(self, material):
+        mat = self.get_converted_material(material)
+        key = ';'.join([str(v) for k, v in mat.items() if k != 'uuid'])
+
+        mat = self.unique_materials.setdefault(key, mat)
+        return mat['uuid']
+
+
+    def get_converted_material(self, material):
+        effect = material.effect
+
+        attrs = OrderedDict()
+        attrs['uuid'] = material.id
+        attrs['name'] = material.name or ''
+        if effect.shadingtype == 'lambert':
+            attrs['type'] = 'MeshLambertMaterial'
+        elif effect.shadingtype == 'phong' or effect.shadingtype == 'blinn':
+            attrs['type'] = 'MeshPhongMaterial'
+        else:
+            attrs['type'] = 'MeshBasicMaterial'
+
+        color_mapping = [('diffuse', 'color'),
+                         ('ambient', 'ambient'),
+                         ('specular', 'specular'),
+                         ('emission', 'emissive')]
+        for effect_attr, three_name in color_mapping:
+            val = getattr(effect, effect_attr, None)
+            if val is not None and not isinstance(val, collada.material.Map):
+                attrs[three_name] = deccolor(val)
+
+        float_mapping = [('shininess', 'shininess'),
+                         ('transparency', 'opacity'),
+                         ('reflectivity', 'reflectivity'),
+                         ('index_of_refraction', 'refractionRatio')]
+
+        for effect_attr, three_name in float_mapping:
+            val = getattr(effect, effect_attr, None)
+            if val is not None and not isinstance(val, collada.material.Map):
+                attrs[three_name] = val
+        attrs['transparent'] = attrs['opacity'] < 1
+        map_mapping = [('diffuse', 'map'),
+                       ('ambient', 'mapAmbient'),
+                       ('specular', 'mapSpecular'),
+                       ('bump_map', 'mapNormal')]
+        for effect_attr, three_name in map_mapping:
+            val = getattr(effect, effect_attr, None)
+            if isinstance(val, collada.material.Map):
+                attrs[three_name] = val.sampler.surface.image.id
+
+        # transparency
+        trans_color = effect.transparent
+        if trans_color is not None:
+            transparency = effect.transparency if effect.transparency is not None else 1
+            if effect.opaque_mode == 'A_ONE':
+                # Takes the transparency information from the colors alpha channel, where the value 1.0 is opaque.
+                opacity = trans_color[3] * transparency
+
+            elif effect.opaque_mode == 'RGB_ZERO':
+                # Takes the transparency information from the colors red, green, and blue channels,
+                # where the value 0.0 is opaque, with each channel modulated independently.
+
+                # luminance is the function, based on the ISO/CIE color standards (see ITU-R Recommendation
+                # BT.709-4), that averages the color channels into one value
+                luminance = trans_color[0] * 0.212671 + trans_color[1] * 0.715160 + trans_color[2] * 0.072169
+                opacity = 1.0 - luminance * transparency
+
             else:
-                attrs['type'] = 'MeshBasicMaterial'
+                raise NotImplementedError
 
-            color_mapping = [('diffuse', 'color'),
-                             ('ambient', 'ambient'),
-                             ('specular', 'specular'),
-                             ('emission', 'emissive')]
-            for effect_attr, three_name in color_mapping:
-                val = getattr(effect, effect_attr, None)
-                if val is not None and not isinstance(val, collada.material.Map):
-                    attrs[three_name] = deccolor(val)
-
-            float_mapping = [('shininess', 'shininess'),
-                             ('transparency', 'opacity'),
-                             ('reflectivity', 'reflectivity'),
-                             ('index_of_refraction', 'refractionRatio')]
-
-            for effect_attr, three_name in float_mapping:
-                val = getattr(effect, effect_attr, None)
-                if val is not None and not isinstance(val, collada.material.Map):
-                    attrs[three_name] = val
-            attrs['transparent'] = attrs['opacity'] < 1
-            map_mapping = [('diffuse', 'map'),
-                           ('ambient', 'mapAmbient'),
-                           ('specular', 'mapSpecular'),
-                           ('bump_map', 'mapNormal')]
-            for effect_attr, three_name in map_mapping:
-                val = getattr(effect, effect_attr, None)
-                if isinstance(val, collada.material.Map):
-                    attrs[three_name] = val.sampler.surface.image.id
-
-            # transparency
-            trans_color = effect.transparent
-            if trans_color is not None:
-                transparency = effect.transparency if effect.transparency is not None else 1
-                if effect.opaque_mode == 'A_ONE':
-                    # Takes the transparency information from the colors alpha channel, where the value 1.0 is opaque.
-                    opacity = trans_color[3] * transparency
-
-                elif effect.opaque_mode == 'RGB_ZERO':
-                    # Takes the transparency information from the colors red, green, and blue channels,
-                    # where the value 0.0 is opaque, with each channel modulated independently.
-
-                    # luminance is the function, based on the ISO/CIE color standards (see ITU-R Recommendation
-                    # BT.709-4), that averages the color channels into one value
-                    luminance = trans_color[0] * 0.212671 + trans_color[1] * 0.715160 + trans_color[2] * 0.072169
-                    opacity = 1.0 - luminance * transparency
-
-                else:
-                    raise NotImplementedError
-
-                attrs['opacity'] = opacity
-                attrs['transparent'] = opacity < 1
-
-            materials.append(attrs)
-
-        return materials
+            attrs['opacity'] = opacity
+            attrs['transparent'] = opacity < 1
+        return attrs
 
 
     def serializeBoundPrimitives(self, primitives, geom_id):
@@ -183,7 +189,7 @@ class ThreeJSDictGenerator(object):
                         continue
                     if boundprim.vertex is None or not len(boundprim.vertex):
                         continue
-                    mat = boundprim.material.id
+                    mat = self.get_unique_material(boundprim.material)
                     primitives = primitives_by_mat.setdefault(mat, [])
                     primitives.append(boundprim)
 
